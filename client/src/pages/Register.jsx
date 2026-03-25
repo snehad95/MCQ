@@ -50,7 +50,7 @@ const Register = () => {
             <Card.Body className="p-4">
               <div className="text-center mb-4">
                 <h4 className="fw-bold">Create Account</h4>
-                <p className="text-muted">Join the Professional Examination System</p>
+                <p className="text-muted">Join the Examination System</p>
               </div>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>

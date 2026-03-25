@@ -47,7 +47,7 @@ const Login = () => {
               <div className="text-center mb-4">
                 <i className="bi bi-person-circle fs-1" style={{ color: 'var(--p-500)' }}></i>
                 <h4 className="fw-bold mt-2">Sign In</h4>
-                <p className="text-muted">Professional Examination System</p>
+                {/* <p className="text-muted">Professional Examination System</p> */}
               </div>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
