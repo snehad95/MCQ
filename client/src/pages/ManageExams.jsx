@@ -31,6 +31,7 @@ const ManageExams = () => {
     }
   };
 
+  // eslint-disable-next-line
   useEffect(() => { fetchExams(); }, []);
 
   const resetForm = () => {

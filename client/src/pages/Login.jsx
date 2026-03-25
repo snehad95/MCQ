@@ -3,7 +3,6 @@ import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-b
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext'; 
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -11,7 +10,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { darkMode } = useTheme();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
