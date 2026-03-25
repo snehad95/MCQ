@@ -1,7 +1,11 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api'
+  // Use relative path since we will serve the frontend directly from the backend
+  baseURL: '/api',
+  headers: {
+    'ngrok-skip-browser-warning': '69420'
+  }
 });
 
 // Attach token to every request

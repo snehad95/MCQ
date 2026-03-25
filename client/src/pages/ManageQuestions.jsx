@@ -143,10 +143,10 @@ const ManageQuestions = () => {
                 <td>
                   {q.questionImage ? (
                     <img
-                      src={`http://localhost:5000${q.questionImage}`}
+                      src={q.questionImage.startsWith('http') ? q.questionImage : `http://localhost:5000${q.questionImage}`}
                       alt="Question"
                       style={{ maxWidth: '80px', maxHeight: '60px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer' }}
-                      onClick={() => window.open(`http://localhost:5000${q.questionImage}`, '_blank')}
+                      onClick={() => window.open(q.questionImage.startsWith('http') ? q.questionImage : `http://localhost:5000${q.questionImage}`, '_blank')}
                     />
                   ) : (
                     <small className="text-muted">—</small>

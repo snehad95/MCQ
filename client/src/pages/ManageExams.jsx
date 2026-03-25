@@ -193,14 +193,14 @@ const ManageExams = () => {
                 <Form.Control type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
               </Form.Group>
               <Form.Group className="mb-3 col-md-4">
-                <Form.Label>Start Time</Form.Label>
+                <Form.Label>Start Time (24HR)</Form.Label>
                 <Form.Control type="time" value={form.startTime} onChange={e => {
                   const newStart = e.target.value;
                   setForm(prev => ({ ...prev, startTime: newStart, duration: calcDuration(newStart, prev.endTime) }));
                 }} required />
               </Form.Group>
               <Form.Group className="mb-3 col-md-4">
-                <Form.Label>End Time</Form.Label>
+                <Form.Label>End Time (24HR)</Form.Label>
                 <Form.Control type="time" value={form.endTime} onChange={e => {
                   const newEnd = e.target.value;
                   setForm(prev => ({ ...prev, endTime: newEnd, duration: calcDuration(prev.startTime, newEnd) }));

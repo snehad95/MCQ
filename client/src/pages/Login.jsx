@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext'; 
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -10,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { darkMode } = useTheme();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,10 +45,9 @@ const Login = () => {
           <Card className="shadow-lg border-0 auth-card">
             <Card.Body className="p-4">
               <div className="text-center mb-4">
-                <h2 className="fw-bold" style={{ borderBottom: 'none', display: 'block' }}>ExamPortal</h2>
-                <small className="text-muted d-block" style={{ letterSpacing: '1px', textTransform: 'uppercase' }}>Online Examination System</small>
-                <hr style={{ borderColor: '#FF9933', borderWidth: '2px', width: '60px', margin: '12px auto' }} />
-                <p className="text-muted mb-0">Login to your account</p>
+                <i className="bi bi-person-circle fs-1" style={{ color: 'var(--p-500)' }}></i>
+                <h4 className="fw-bold mt-2">Sign In</h4>
+                <p className="text-muted">Professional Examination System</p>
               </div>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>

@@ -46,13 +46,11 @@ const Register = () => {
     <Container className="py-5">
       <Row className="justify-content-center">
         <Col md={6} lg={5}>
-          <Card className="shadow-lg border-0 auth-card">
+          <Card className="shadow-sm auth-card"> {/* Modified Card className */}
             <Card.Body className="p-4">
               <div className="text-center mb-4">
-                <h2 className="fw-bold" style={{ borderBottom: 'none', display: 'block' }}>ExamPortal</h2>
-                <small className="text-muted d-block" style={{ letterSpacing: '1px', textTransform: 'uppercase' }}>Online Examination System</small>
-                <hr style={{ borderColor: '#FF9933', borderWidth: '2px', width: '60px', margin: '12px auto' }} />
-                <p className="text-muted mb-0">Create your account</p>
+                <h4 className="fw-bold">Create Account</h4>
+                <p className="text-muted">Join the Professional Examination System</p>
               </div>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>

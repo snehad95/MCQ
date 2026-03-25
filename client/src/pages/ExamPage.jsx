@@ -544,7 +544,7 @@ const ExamPage = () => {
               {question.questionImage && (
                 <div className="mb-4 text-center">
                   <img
-                    src={`http://localhost:5000${question.questionImage}`}
+                    src={question.questionImage.startsWith('http') ? question.questionImage : `http://localhost:5000${question.questionImage}`}
                     alt="Question"
                     style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '8px', border: '1px solid #dee2e6' }}
                   />

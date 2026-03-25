@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -27,58 +28,63 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<HomeRedirect />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          <div className="d-flex flex-column min-vh-100">
+            <Navbar />
+            <main className="flex-grow-1">
+              <Routes>
+                <Route path="/" element={<HomeRedirect />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
-            {/* Student Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute roles={['student']}>
-                <StudentDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/exam/:examId" element={
-              <ProtectedRoute roles={['student']}>
-                <ExamPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/my-results" element={
-              <ProtectedRoute roles={['student']}>
-                <MyResults />
-              </ProtectedRoute>
-            } />
+                {/* Student Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute roles={['student']}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/exam/:examId" element={
+                  <ProtectedRoute roles={['student']}>
+                    <ExamPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/my-results" element={
+                  <ProtectedRoute roles={['student']}>
+                    <MyResults />
+                  </ProtectedRoute>
+                } />
 
-            {/* Admin/Teacher Routes */}
-            <Route path="/admin" element={
-              <ProtectedRoute roles={['admin', 'teacher']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/exams" element={
-              <ProtectedRoute roles={['admin', 'teacher']}>
-                <ManageExams />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/questions/:examId" element={
-              <ProtectedRoute roles={['admin', 'teacher']}>
-                <ManageQuestions />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/results" element={
-              <ProtectedRoute roles={['admin', 'teacher']}>
-                <ViewResults />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users" element={
-              <ProtectedRoute roles={['admin']}>
-                <ManageUsers />
-              </ProtectedRoute>
-            } />
+                {/* Admin/Teacher Routes */}
+                <Route path="/admin" element={
+                  <ProtectedRoute roles={['admin', 'teacher']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/exams" element={
+                  <ProtectedRoute roles={['admin', 'teacher']}>
+                    <ManageExams />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/questions/:examId" element={
+                  <ProtectedRoute roles={['admin', 'teacher']}>
+                    <ManageQuestions />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/results" element={
+                  <ProtectedRoute roles={['admin', 'teacher']}>
+                    <ViewResults />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <ManageUsers />
+                  </ProtectedRoute>
+                } />
 
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
         </Router>
       </AuthProvider>
     </ThemeProvider>
