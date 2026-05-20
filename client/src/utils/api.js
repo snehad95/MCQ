@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  // Use relative path since we will serve the frontend directly from the backend
-  baseURL: '/api',
+  // Use environment variable VITE_API_URL if available, otherwise relative path
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'ngrok-skip-browser-warning': '69420'
   }

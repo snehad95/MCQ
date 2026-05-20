@@ -22,7 +22,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'teacher', 'admin'],
     default: 'student'
-  }
+  },
+  // Email verification status
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

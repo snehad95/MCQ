@@ -14,6 +14,7 @@ import ManageExams from './pages/ManageExams';
 import ManageQuestions from './pages/ManageQuestions';
 import ManageUsers from './pages/ManageUsers';
 import ViewResults from './pages/ViewResults';
+import AccountSettings from './pages/AccountSettings';
 
 const HomeRedirect = () => {
   const { user, loading } = useAuth();
@@ -77,6 +78,13 @@ function App() {
                 <Route path="/admin/users" element={
                   <ProtectedRoute roles={['admin']}>
                     <ManageUsers />
+                  </ProtectedRoute>
+                } />
+
+                {/* Account Settings — all authenticated users */}
+                <Route path="/settings" element={
+                  <ProtectedRoute roles={['student', 'teacher', 'admin']}>
+                    <AccountSettings />
                   </ProtectedRoute>
                 } />
 

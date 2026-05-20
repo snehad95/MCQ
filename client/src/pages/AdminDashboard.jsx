@@ -5,7 +5,7 @@ import API from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({ exams: 0, users: 0, results: 0 });
+  const [stats, setStats] = useState({ exams: 0, users: 0, admins: 0, teachers: 0, students: 0, results: 0 });
   const [recentExams, setRecentExams] = useState([]);
   const [allExams, setAllExams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,18 @@ const AdminDashboard = () => {
 
         if (user.role === 'admin') {
           const usersRes = await API.get('/users');
-          setStats(prev => ({ ...prev, users: usersRes.data.length }));
+          const allUsers = usersRes.data;
+          const adminsCount = allUsers.filter(u => u.role === 'admin').length;
+          const teachersCount = allUsers.filter(u => u.role === 'teacher').length;
+          const studentsCount = allUsers.filter(u => u.role === 'student').length;
+
+          setStats(prev => ({
+            ...prev,
+            users: allUsers.length,
+            admins: adminsCount,
+            teachers: teachersCount,
+            students: studentsCount
+          }));
         }
       } catch (err) {
         console.error(err);
@@ -77,34 +88,97 @@ const AdminDashboard = () => {
       <h2 className="mb-4">Admin Dashboard</h2>
       <p className="text-muted">Welcome, {user?.name}!</p>
 
+      {/* Main Stats Row */}
       <Row className="mb-4">
         <Col md={4} className="mb-3">
-          <Card className="shadow-sm border-0 stat-card-exams" onClick={() => navigate('/admin/exams')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="text-center py-4">
-              <h1 className="fw-bold">{stats.exams}</h1>
-              <h5>Total Exams</h5>
+          <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/exams')} style={{ cursor: 'pointer' }}>
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>Total Exams</h6>
+                <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>{stats.exams}</h2>
+              </div>
+              <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.36 0.09 255 / 0.08)', color: 'var(--p-500)' }}>
+                <i className="bi bi-journal-text fs-3"></i>
+              </div>
             </Card.Body>
           </Card>
         </Col>
+        
         {user.role === 'admin' && (
           <Col md={4} className="mb-3">
-            <Card className="shadow-sm border-0 stat-card-users" onClick={() => navigate('/admin/users')} style={{ cursor: 'pointer' }}>
-              <Card.Body className="text-center py-4">
-                <h1 className="fw-bold">{stats.users}</h1>
-                <h5>Total Users</h5>
+            <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/users', { state: { filterRole: 'all' } })} style={{ cursor: 'pointer' }}>
+              <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                <div>
+                  <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>Total Users</h6>
+                  <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>{stats.users}</h2>
+                </div>
+                <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.66 0.16 210 / 0.08)', color: 'oklch(0.66 0.16 210)' }}>
+                  <i className="bi bi-people-fill fs-3"></i>
+                </div>
               </Card.Body>
             </Card>
           </Col>
         )}
+
         <Col md={4} className="mb-3">
-          <Card className="shadow-sm border-0 stat-card-results" onClick={() => navigate('/admin/results')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="text-center py-4">
-              <h1 className="fw-bold">View</h1>
-              <h5>View Results</h5>
+          <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/results')} style={{ cursor: 'pointer' }}>
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>View Results</h6>
+                <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>View</h2>
+              </div>
+              <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.62 0.17 150 / 0.08)', color: 'oklch(0.62 0.17 150)' }}>
+                <i className="bi bi-award-fill fs-3"></i>
+              </div>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      {/* User Subsegments Breakdown (Admin only) */}
+      {user.role === 'admin' && (
+        <Row className="mb-4">
+          <Col md={4} className="mb-3">
+            <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/users', { state: { filterRole: 'student' } })} style={{ cursor: 'pointer' }}>
+              <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                <div>
+                  <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>Total Students</h6>
+                  <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>{stats.students}</h2>
+                </div>
+                <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.66 0.16 210 / 0.08)', color: 'oklch(0.66 0.16 210)' }}>
+                  <i className="bi bi-mortarboard-fill fs-3"></i>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4} className="mb-3">
+            <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/users', { state: { filterRole: 'teacher' } })} style={{ cursor: 'pointer' }}>
+              <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                <div>
+                  <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>Total Teachers</h6>
+                  <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>{stats.teachers}</h2>
+                </div>
+                <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.79 0.16 70 / 0.08)', color: 'oklch(0.79 0.16 70)' }}>
+                  <i className="bi bi-person-badge-fill fs-3"></i>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4} className="mb-3">
+            <Card className="shadow-sm border-0 dashboard-stat-card" onClick={() => navigate('/admin/users', { state: { filterRole: 'admin' } })} style={{ cursor: 'pointer' }}>
+              <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                <div>
+                  <h6 className="text-muted fw-semibold text-uppercase tracking-wider mb-1" style={{ fontSize: '0.8rem' }}>Total Admins</h6>
+                  <h2 className="fw-bold mb-0 text-main font-outfit" style={{ fontSize: '2.2rem', background: 'none', webkitTextFillColor: 'initial', color: 'var(--text-main)' }}>{stats.admins}</h2>
+                </div>
+                <div className="stat-icon-wrapper" style={{ backgroundColor: 'oklch(0.57 0.2 27 / 0.08)', color: 'oklch(0.57 0.2 27)' }}>
+                  <i className="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
 
       <h4 className="mb-3">Recent Exams</h4>
       {recentExams.map(exam => (

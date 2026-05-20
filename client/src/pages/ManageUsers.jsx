@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Card, Table, Button, Badge, Alert, Form, Row, Col, Tabs, Tab } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 import API from '../utils/api';
 
 const ManageUsers = () => {
@@ -9,6 +10,9 @@ const ManageUsers = () => {
   const [examResults, setExamResults] = useState([]);
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('users');
+
+  const location = useLocation();
+  const [roleFilter, setRoleFilter] = useState(location.state?.filterRole || 'all');
 
   const fetchUsers = async () => {
     try {
@@ -51,6 +55,13 @@ const ManageUsers = () => {
     }
   }, [selectedExam]);
 
+  // Sync role filter if navigated with different states
+  useEffect(() => {
+    if (location.state?.filterRole) {
+      setRoleFilter(location.state.filterRole);
+    }
+  }, [location.state]);
+
   const changeRole = async (userId, newRole) => {
     try {
       await API.put(`/users/${userId}/role`, { role: newRole });
@@ -81,6 +92,11 @@ const ManageUsers = () => {
 
   const selectedExamData = exams.find(e => e._id === selectedExam);
 
+  const filteredUsers = users.filter(u => {
+    if (roleFilter === 'all') return true;
+    return u.role === roleFilter;
+  });
+
   return (
     <Container className="py-4">
       <h2 className="mb-4">Manage Users</h2>
@@ -90,49 +106,68 @@ const ManageUsers = () => {
         {/* TAB 1: All Users */}
         <Tab eventKey="users" title="All Users">
           <Card className="shadow-sm border-0">
-            <Table responsive hover className="mb-0">
-              <thead className="table-dark">
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Current Role</th>
-                  <th>Change Role</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(u => (
-                  <tr key={u._id}>
-                    <td className="fw-bold">{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{getRoleBadge(u.role)}</td>
-                    <td>
-                      <Form.Select
-                        size="sm"
-                        value={u.role}
-                        onChange={(e) => changeRole(u._id, e.target.value)}
-                        style={{ width: '120px' }}
-                      >
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="admin">Admin</option>
-                      </Form.Select>
-                    </td>
-                    <td><small>{new Date(u.createdAt).toLocaleDateString()}</small></td>
-                    <td>
-                      <Button size="sm" variant="outline-danger" onClick={() => deleteUser(u._id)}>Delete</Button>
-                    </td>
+            <Card.Body className="p-0">
+              <div className="p-3 d-flex justify-content-between align-items-center border-bottom" style={{ backgroundColor: 'transparent', borderColor: 'var(--border-color)' }}>
+                <h5 className="mb-0 fw-bold text-main">User Records</h5>
+                <div className="d-flex align-items-center gap-2">
+                  <Form.Label className="mb-0 fw-semibold text-muted text-nowrap" style={{ fontSize: '0.9rem' }}>Filter by Role:</Form.Label>
+                  <Form.Select
+                    size="sm"
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    style={{ width: '160px', borderRadius: '8px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="student">Students</option>
+                    <option value="teacher">Teachers</option>
+                    <option value="admin">Admins</option>
+                  </Form.Select>
+                </div>
+              </div>
+              <Table responsive hover className="mb-0">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Current Role</th>
+                    <th>Change Role</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr><td colSpan="6" className="text-center text-muted py-4">No users found</td></tr>
-                )}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {filteredUsers.map(u => (
+                    <tr key={u._id}>
+                      <td className="fw-bold">{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{getRoleBadge(u.role)}</td>
+                      <td>
+                        <Form.Select
+                          size="sm"
+                          value={u.role}
+                          onChange={(e) => changeRole(u._id, e.target.value)}
+                          style={{ width: '120px', borderRadius: '8px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}
+                        >
+                          <option value="student">Student</option>
+                          <option value="teacher">Teacher</option>
+                          <option value="admin">Admin</option>
+                        </Form.Select>
+                      </td>
+                      <td><small>{new Date(u.createdAt).toLocaleDateString()}</small></td>
+                      <td>
+                        <Button size="sm" variant="outline-danger" onClick={() => deleteUser(u._id)}>Delete</Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredUsers.length === 0 && (
+                    <tr><td colSpan="6" className="text-center text-muted py-4">No users found for this role filter.</td></tr>
+                  )}
+                </tbody>
+              </Table>
+            </Card.Body>
           </Card>
         </Tab>
-
+ 
         {/* TAB 2: Students by Exam */}
         <Tab eventKey="byExam" title="Students by Exam">
           <Card className="shadow-sm border-0 p-3 mb-3">
@@ -143,6 +178,7 @@ const ManageUsers = () => {
                   value={selectedExam}
                   onChange={(e) => setSelectedExam(e.target.value)}
                   id="select-exam-filter"
+                  style={{ borderRadius: '10px', border: '1.5px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', padding: '0.6rem 1rem' }}
                 >
                   <option value="">-- Choose an exam --</option>
                   {exams.map(exam => (

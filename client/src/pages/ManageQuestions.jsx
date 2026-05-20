@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
+import { Container, Card, Table, Button, Modal, Form, Alert, Badge, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 
@@ -18,6 +18,13 @@ const ManageQuestions = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Bulk Upload States
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkSuccess, setBulkSuccess] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -93,6 +100,63 @@ const ManageQuestions = () => {
     }
   };
 
+  const handleBulkUpload = async (e) => {
+    e.preventDefault();
+    setBulkError('');
+    setBulkSuccess('');
+
+    if (!bulkFile) {
+      return setBulkError('Please select a CSV file first');
+    }
+
+    setBulkLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('examId', examId);
+      formData.append('file', bulkFile);
+
+      const res = await API.post('/questions/bulk-upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setBulkSuccess(res.data.message);
+      setBulkFile(null);
+      
+      const fileInput = document.getElementById('bulk-file-input');
+      if (fileInput) fileInput.value = '';
+
+      if (res.data.errors && res.data.errors.length > 0) {
+        setBulkError(`Partial Success. Some rows failed:\n${res.data.errors.join('\n')}`);
+      }
+
+      fetchData();
+      setTimeout(() => {
+        if (!res.data.errors || res.data.errors.length === 0) {
+          setShowBulkModal(false);
+        }
+        setBulkSuccess('');
+      }, 4000);
+
+    } catch (err) {
+      setBulkError(err.response?.data?.message || 'Failed to upload questions CSV');
+    }
+    setBulkLoading(false);
+  };
+
+  const downloadTemplate = () => {
+    const headers = "questionText,optionA,optionB,optionC,optionD,correctAnswer\n";
+    const row1 = "\"What is the primary tech stack of CDAC ExamWeb?\",\"LAMP Stack\",\"MERN Stack\",\"Django + PostgreSQL\",\"Java Spring + Oracle\",\"MERN Stack\"\n";
+    const row2 = "\"Which tool manages backend processes in clustered mode?\",\"Nodemon\",\"Docker\",\"PM2\",\"Kubernetes\",\"PM2\"\n";
+    const csvContent = "data:text/csv;charset=utf-8," + encodeURIComponent(headers + row1 + row2);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", csvContent);
+    link.setAttribute("download", "questions_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const deleteQuestion = async (id) => {
     if (!window.confirm('Delete this question?')) return;
     try {
@@ -108,7 +172,7 @@ const ManageQuestions = () => {
   return (
     <Container className="py-4">
       <Button variant="outline-secondary" onClick={() => navigate('/admin/exams')} className="mb-3">
-                Back to Exams
+        Back to Exams
       </Button>
 
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -116,9 +180,14 @@ const ManageQuestions = () => {
           <h2>Questions for: {exam?.title}</h2>
           <Badge bg="info">{questions.length} questions</Badge>
         </div>
-        <Button variant="primary" onClick={() => { resetForm(); setShowModal(true); }} id="add-question-btn">
-          + Add Question
-        </Button>
+        <div className="d-flex gap-2">
+          <Button variant="outline-primary" onClick={() => { setBulkError(''); setBulkSuccess(''); setBulkFile(null); setShowBulkModal(true); }} id="bulk-upload-btn">
+            <i className="bi bi-file-earmark-spreadsheet me-1"></i> Bulk Upload CSV
+          </Button>
+          <Button variant="primary" onClick={() => { resetForm(); setShowModal(true); }} id="add-question-btn">
+            + Add Question
+          </Button>
+        </div>
       </div>
 
       {success && <Alert variant="success">{success}</Alert>}
@@ -244,6 +313,61 @@ const ManageQuestions = () => {
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
             <Button variant="primary" type="submit">Add Question</Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+
+      {/* Bulk Upload Excel/CSV Modal */}
+      <Modal show={showBulkModal} onHide={() => setShowBulkModal(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title><i className="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Bulk Upload Questions (Excel or CSV)</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleBulkUpload}>
+          <Modal.Body>
+            {bulkError && <Alert variant={bulkSuccess ? "warning" : "danger"} style={{ whiteSpace: 'pre-line' }}>{bulkError}</Alert>}
+            {bulkSuccess && <Alert variant="success">{bulkSuccess}</Alert>}
+
+            {/* Quick Tutorial: How to upload Excel or CSV */}
+            <div className="mb-4 p-3 bg-light rounded border">
+              <h6 className="fw-bold mb-2 text-main text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.05em' }}>
+                💡 Bulk Upload File Formats & Guide
+              </h6>
+              <ol className="small text-muted mb-0 ps-3">
+                <li>Create your question sheet in Excel or Google Sheets with these exact column headers:
+                  <code className="d-block bg-white border rounded p-1.5 my-1.5 fw-semibold text-dark text-center select-all">
+                    questionText,optionA,optionB,optionC,optionD,correctAnswer
+                  </code>
+                </li>
+                <li>Write your options. The <strong>correctAnswer</strong> column can be option text (e.g., matching options exactly), letter indices (<code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>), or option numbers (<code>1</code>, <code>2</code>, <code>3</code>, <code>4</code>).</li>
+                <li>You can directly upload the raw <strong>Excel Sheet (.xlsx, .xls)</strong> or a standard <strong>CSV file (.csv)</strong>. Both formats are fully parsed and validated instantly!</li>
+                <li>Click <strong>Download Template</strong> below to see a sample:</li>
+              </ol>
+              <div className="mt-2.5">
+                <Button variant="outline-secondary" size="sm" onClick={downloadTemplate}>
+                  <i className="bi bi-download me-1"></i> Download Template (.csv)
+                </Button>
+              </div>
+            </div>
+
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-semibold">Select File (Excel or CSV)</Form.Label>
+              <Form.Control
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                id="bulk-file-input"
+                onChange={e => setBulkFile(e.target.files[0])}
+                required
+              />
+              <Form.Text className="text-muted">
+                Supports Excel (.xlsx, .xls) and Comma Separated Values (.csv) formats.
+              </Form.Text>
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowBulkModal(false)} disabled={bulkLoading}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={bulkLoading} id="bulk-submit-btn">
+              {bulkLoading ? <><Spinner size="sm" className="me-2" />Uploading & Parsing...</> : 'Upload Questions'}
+            </Button>
           </Modal.Footer>
         </Form>
       </Modal>
